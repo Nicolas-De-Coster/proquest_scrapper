@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import os
 import time
@@ -30,9 +31,9 @@ def log_dauphine(driver, my_id, my_pwd):
 
     """
     try:
-        driver.find_element_by_id("username").send_keys(my_id)
-        driver.find_element_by_id("password").send_keys(my_pwd)
-        driver.find_element_by_xpath("//*[@id='fm1']/section[4]/input[4]").click()
+        driver.find_element(By.ID, "username").send_keys(my_id)
+        driver.find_element(By.ID, "password").send_keys(my_pwd)
+        driver.find_element(By.XPATH, "//*[@id='fm1']/section[4]/input[4]").click()
     except:
         warnings.warn("Error trying to log into Dauphine.")
 
@@ -46,7 +47,7 @@ def accept_cookies(driver):
     driver : selenium.werbdriver.
         A selenium webdriver asked to accept cookies on proquest's website.
 
-    Returns
+    ReturnsXPATH
     -------
     None.
 
@@ -95,7 +96,7 @@ def setup_driver(url, chromedriver_path, my_id, my_pwd, delay=2):
 
     """
     dauphine_url = "https://search-proquest-com-s.proxy.bu.dauphine.fr"
-    driver = webdriver.Chrome(chromedriver_path)
+    driver = webdriver.Chrome(service = Service(chromedriver_path))
         
     driver.get(dauphine_url)
     log_dauphine(driver, my_id, my_pwd)  
@@ -148,20 +149,20 @@ def page_url_recovery(newspapper_url, chromedriver_path, my_id, my_pwd,
 
     for i in range(10):
         try:
-            articles_list = driver.find_element_by_xpath(
+            articles_list = driver.find_element(By.XPATH,
                 '//*[@id="contentsZone"]/div/div/div[1]/div[2]/ul')
             break
         except:
             time.sleep(2)
             
             
-    articles = articles_list.find_elements_by_tag_name("li")
+    articles = articles_list.find_elements(By.TAG_NAME, "li")
     page_list=[]
     
     for article in articles:
         if article.get_attribute("class")=="resultItem ltr":
             try:
-                temp_url = article.find_element_by_id(
+                temp_url = article.find_element(By.ID, 
                     "addFlashPageParameterformat_fulltextPDF")
                 page_list.append(temp_url.get_attribute("href"))
             except:
@@ -173,8 +174,8 @@ def page_url_recovery(newspapper_url, chromedriver_path, my_id, my_pwd,
     max_pages = 40 # max number of accesses before the website detects the program as a bot
 
     driver.get(page_list[0])
-    pdf_list.append(driver.find_element_by_xpath("//*[@id='embedded-pdf']").get_attribute("src"))
-    page_num_list.append(driver.find_element_by_xpath('//*[@id="authordiv"]/span[2]').text)
+    pdf_list.append(driver.find_element(By.XPATH, "//*[@id='embedded-pdf']").get_attribute("src"))
+    page_num_list.append(driver.find_element(By.XPATH, '//*[@id="authordiv"]/span[2]').text)
 
     for page in page_list:   
         if page_count == max_pages:
@@ -185,8 +186,8 @@ def page_url_recovery(newspapper_url, chromedriver_path, my_id, my_pwd,
         
         page_count += 1
         driver.get(page)
-        pdf_list.append(driver.find_element_by_xpath("//*[@id='embedded-pdf']").get_attribute("src"))
-        page_num_list.append(driver.find_element_by_xpath('//*[@id="authordiv"]/span[2]').text)
+        pdf_list.append(driver.find_element(By.XPATH, "//*[@id='embedded-pdf']").get_attribute("src"))
+        page_num_list.append(driver.find_element(By.XPATH, '//*[@id="authordiv"]/span[2]').text)
         
     driver.close()
     
